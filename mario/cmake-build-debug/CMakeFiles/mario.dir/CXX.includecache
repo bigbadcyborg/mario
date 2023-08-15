@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Sully/Desktop/levels/SDL_Plotter.h
+SDL2/SDL.h
+-
+SDL2/SDL_mixer.h
+-
+string.h
+-
+iostream
+-
+string
+-
+string.h
+-
+map
+-
+
+C:/Users/Sully/Desktop/levels/functions.h
+SDL_Plotter.h
+C:/Users/Sully/Desktop/levels/SDL_Plotter.h
+
+C:/Users/Sully/Desktop/levels/main.cpp
+iostream
+-
+SDL_Plotter.h
+C:/Users/Sully/Desktop/levels/SDL_Plotter.h
+functions.h
+C:/Users/Sully/Desktop/levels/functions.h
+fstream
+-
+

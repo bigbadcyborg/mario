@@ -1,0 +1,59 @@
+//NOTE: A fair portion of this is either unused or still in work.
+
+//In functions.cpp
+
+//SSSSSSSSSSS + 1 part makes no sense
+bool Sprite::onObstacle(Obstacle &p, Obstacle &q, Obstacle &r, Obstacle &s, Obstacle &t, Obstacle &u) {
+    if (posY + height == p.getPosY() + 1 && posX < p.getPosX() + p.getWidth() && posX + width > p.getPosX()) { //midplat
+        return true;
+    } else if (posY + height == q.getPosY() && posX < q.getPosX() + q.getWidth()){ //leftplat1
+        return true;
+    } else if (posY + height == r.getPosY() && posX + width > r.getPosX()) { //rightplat1
+        return true;
+    } else if (posY + height == s.getPosY() && posX < s.getPosX() + s.getWidth()) { //top left
+        return true;
+    } else if (posY + height == t.getPosY() && posX + width > t.getPosX()){//top right
+        return true;
+    } else if (posY + height == u.getPosY()){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//SSSSSs
+bool Sprite::hitsObstacle(Obstacle &p, Obstacle &q, Obstacle &r, Obstacle &s, Obstacle &t) {
+    if (posY == p.getPosY() + p.getHeight() && posX < p.getPosX() + p.getWidth() && posX + width > p.getPosX()){ //midplat
+        return true;
+    } else if (posY == q.getPosY() + q.getHeight() + 1 && posX < q.getPosX() + q.getWidth()){ //leftplat1
+        return true;
+    } else if (posY == r.getPosY() + r.getHeight() + 1 && posX + width > r.getPosX()){ //rightplat1
+        return true;
+    } else if (posY == s.getPosY() + s.getHeight() + 1 && posX < s.getPosX() + s.getWidth()){ //top left
+        return true;
+    } else if (posY == t.getPosY() + t.getHeight() + 1 && posX + width > t.getPosX()){ //top right
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//Used in main.cppp
+
+if (mario.onObstacle(midPlat, leftPlat1, rightPlat1, topLeft, topRight, bottomPlat)) {
+            mario.setStopped(true);
+            mario.setGravity(false);
+            positionIncrement = 0;
+            DoneJumping = false;
+        } else if (mario.hitsObstacle(midPlat, leftPlat1, rightPlat1, topLeft, topRight)) { //Works but need to work on behaviour
+            mario.setStopped(true);
+            mario.setGravity(false);
+            positionIncrement = 0;
+            DoneJumping = true;
+            bump = true;
+        } else {
+            mario.setStopped(false);
+            mario.setGravity(true);
+            //DoneJumping = false;
+            //bump = false; //SSSSSSS
+        }
