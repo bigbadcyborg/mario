@@ -1,0 +1,34 @@
+entities:
+  - type: enemy
+    x: 100
+    y: 0
+    width: 40
+    height: 40
+    behavior.direction: 1
+  - type: coin
+    x: 800
+    y: 10
+    width: 40
+    height: 40
+    behavior.direction: 1
+  - type: platform
+    x: 0
+    y: 425
+    width: 350
+    height: 25
+  - type: tube
+    x: 0
+    y: 50
+    width: 25
+    height: 75
+  - type: pow
+    x: 482
+    y: 350
+    width: 36
+    height: 36
+progression:
+  startLevel: 1
+  initialEnemyCount: 4
+  initialCoinCount: 1
+  enemyIncrementPerLevel: 2
+  maxLevel: 6
