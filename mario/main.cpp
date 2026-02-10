@@ -39,39 +39,39 @@ int main(int argc, char ** argv)
     SDL_Plotter g(WINDOW_HEIGHT,WINDOW_WIDTH); //the window class
 
     char keyStroke; // used to determine what key is hit
-    Sprite mario;
-    Sprite enemy(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
-    Sprite enemy1(rand() % (WINDOW_WIDTH-40),199,40,40,60,60,60);
-    Sprite enemy2(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
-    Sprite enemy3(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
-    Sprite enemy4(rand() % (WINDOW_WIDTH-40), 125,40,40,60,60,60);
-    Sprite enemy5(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
-    Sprite enemy6(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
-    Sprite enemy7(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy8(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy9(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy10(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy11(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Player mario;
+    Enemy enemy(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
+    Enemy enemy1(rand() % (WINDOW_WIDTH-40),199,40,40,60,60,60);
+    Enemy enemy2(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Enemy enemy3(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Enemy enemy4(rand() % (WINDOW_WIDTH-40), 125,40,40,60,60,60);
+    Enemy enemy5(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Enemy enemy6(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Enemy enemy7(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy8(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy9(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy10(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy11(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
 
-    Sprite coin1 (800,10,40,40,255,255,0);
-    Sprite coin2 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
-    Sprite coin3 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
-    Sprite coin4 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
-    Sprite coin5 (480,0,40,40,255,255,0);
-    Sprite coin6 (275,0,40,40,255,255,0);
-    Sprite coin7 (300,0,40,40,255,255,0);
-    Sprite coin8 (455,0,40,40,255,255,0);
-    Sprite coin9 (240,0,40,40,255,255,0);
-    Sprite coin10 (40,0,40,40,255,255,0);
-    Sprite coin11 (20,0,40,40,255,255,0);
-    Sprite coin12 (900,0,40,40,255,255,0);
-    Sprite coin13 (600,0,40,40,255,255,0);
-    Sprite coin14 (700,0,40,40,255,255,0);
-    Sprite coin15 (800,0,40,40,255,255,0);
+    Coin coin1 (800,10,40,40,255,255,0);
+    Coin coin2 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Coin coin3 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Coin coin4 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Coin coin5 (480,0,40,40,255,255,0);
+    Coin coin6 (275,0,40,40,255,255,0);
+    Coin coin7 (300,0,40,40,255,255,0);
+    Coin coin8 (455,0,40,40,255,255,0);
+    Coin coin9 (240,0,40,40,255,255,0);
+    Coin coin10 (40,0,40,40,255,255,0);
+    Coin coin11 (20,0,40,40,255,255,0);
+    Coin coin12 (900,0,40,40,255,255,0);
+    Coin coin13 (600,0,40,40,255,255,0);
+    Coin coin14 (700,0,40,40,255,255,0);
+    Coin coin15 (800,0,40,40,255,255,0);
 
-    Sprite enemies[12] = {enemy, enemy1, enemy2, enemy3, enemy4, enemy5,
+    Enemy enemies[12] = {enemy, enemy1, enemy2, enemy3, enemy4, enemy5,
                             enemy6, enemy7, enemy8, enemy9, enemy10, enemy11}; //enemies array
-    Sprite coins[15]= {coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9, coin10,
+    Coin coins[15]= {coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9, coin10,
                        coin11, coin12, coin13, coin14, coin15};
 
     //reads in file for score and lives
@@ -189,17 +189,17 @@ int main(int argc, char ** argv)
 
 
     // Platform Obstacles
-    Obstacle leftPlat1(25, 350, 0, 425); //left platform
-    Obstacle rightPlat1(25, 350, 650, 425); // right platform
-    Obstacle midPlat(25, 500, 250, 280); //middle platform
-    Obstacle topLeft(25, 350, 0, 125); //top left platform
-    Obstacle topRight(25, 350, 650, 125); //top right platform
-    Obstacle bottomPlat(25, WINDOW_WIDTH, 0, WINDOW_HEIGHT - 25); //floor
-    Obstacle tubeSide1(75,25,0,50);//tube on left side of screen for enemies and coins
-    Obstacle tubeTop1(25,50,0,50);//tube on left side of screen for enemies and coins
-    Obstacle tubeSide2(75,25,975,50);//tube on right side of screen for enemies and coins
-    Obstacle tubeTop2(25,50,945,50);//tube on right side of screen for enemies and coins
-    Block pow(36,36,482,350); //Sam changed this
+    Platform leftPlat1(25, 350, 0, 425); //left platform
+    Platform rightPlat1(25, 350, 650, 425); // right platform
+    Platform midPlat(25, 500, 250, 280); //middle platform
+    Platform topLeft(25, 350, 0, 125); //top left platform
+    Platform topRight(25, 350, 650, 125); //top right platform
+    Platform bottomPlat(25, WINDOW_WIDTH, 0, WINDOW_HEIGHT - 25); //floor
+    Platform tubeSide1(75,25,0,50);//tube on left side of screen for enemies and coins
+    Platform tubeTop1(25,50,0,50);//tube on left side of screen for enemies and coins
+    Platform tubeSide2(75,25,975,50);//tube on right side of screen for enemies and coins
+    Platform tubeTop2(25,50,945,50);//tube on right side of screen for enemies and coins
+    PowerBlock pow(36,36,482,350); //Sam changed this
     int blockPixel[36][36];
     infile.open("powBlock.txt");
     if(!infile){
@@ -215,7 +215,14 @@ int main(int argc, char ** argv)
     //cout<<bottomPlat.getPosY()<<endl;
 
     //obstacle array
-    Obstacle platforms[6] = {leftPlat1,rightPlat1,midPlat,topLeft,topRight,bottomPlat};
+    Platform platforms[6] = {leftPlat1,rightPlat1,midPlat,topLeft,topRight,bottomPlat};
+
+
+    Entity* platformEntities[6] = {&platforms[0], &platforms[1], &platforms[2], &platforms[3], &platforms[4], &platforms[5]};
+    Entity* enemyEntities[12] = {&enemies[0], &enemies[1], &enemies[2], &enemies[3], &enemies[4], &enemies[5],
+                                &enemies[6], &enemies[7], &enemies[8], &enemies[9], &enemies[10], &enemies[11]};
+    Entity* coinEntities[15] = {&coins[0], &coins[1], &coins[2], &coins[3], &coins[4], &coins[5], &coins[6], &coins[7],
+                               &coins[8], &coins[9], &coins[10], &coins[11], &coins[12], &coins[13], &coins[14]};
 
     bool doneKilling = true;
 
@@ -370,7 +377,7 @@ int main(int argc, char ** argv)
             else
                 enemies[i].setPosY(0);
         }
-        grav(enemies, numEnemies);
+        grav(enemyEntities, numEnemies);
 
         //draw coins if theyre not dead
         for (int i = 0; i < numCoins; i++) {
@@ -387,7 +394,7 @@ int main(int argc, char ** argv)
             else
                 coins[i].setPosY(0);
         }
-        grav(coins, numCoins);
+        grav(coinEntities, numCoins);
 
 
 
@@ -405,7 +412,7 @@ int main(int argc, char ** argv)
             }
 
             //teleport enemies to opposite side
-            checkPos(enemies, numEnemies);
+            checkPos(enemyEntities, numEnemies);
 
             //coin teleport
             if (coin1.getPosX() == 0 && coin1.getPosY() + coin1.getWidth() > 10) { //S
@@ -451,7 +458,7 @@ int main(int argc, char ** argv)
 
             //ENEMIES TO PLATFORM COLLISION
             for (int i = 0; i < numEnemies; i++) {
-                if (collided(enemies[i], platforms, 6)) {
+                if (collided(enemies[i], platformEntities, 6)) {
                     enemies[i].setGravity(false);
                     //positionIncrement = 0;
                 } else {
@@ -461,15 +468,15 @@ int main(int argc, char ** argv)
 
 //COIN TO PLATFORM COLLISION
         for(int i = 0; i < numCoins; i++){
-            if (collided(coins[i], platforms, 6)) {
+            if (collided(coins[i], platformEntities, 6)) {
                 coins[i].setGravity(false);
                 //cout << "COIN COLLIDED!!!";
             } else {
                 coins[i].setGravity(true);
-                grav(coins, numCoins);
+                grav(coinEntities, numCoins);
             }
     }
-    checkPos(coins, numCoins);
+    checkPos(coinEntities, numCoins);
     //checkPos(enemies, numEnemies - deadEnemies);
 
             //=================================================================================
@@ -478,7 +485,7 @@ int main(int argc, char ** argv)
 
 
             //recheck mario collision and set gravity accordingly
-            if (collided(mario, platforms, 6)) {
+            if (collided(mario, platformEntities, 6)) {
                 mario.setGravity(false);
                 positionIncrement = 0;
                 doneJumping = false;
@@ -494,7 +501,7 @@ int main(int argc, char ** argv)
             if (deadEnemies == numEnemies) {
                 level++;
                 //bring all enemies back to life
-                reviveAll(enemies, numEnemies);
+                reviveAll(enemyEntities, numEnemies);
                 numEnemies += 2;
                 coin1.setDead(true);
                 if (level < 6) {
