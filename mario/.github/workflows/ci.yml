@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang-format clang-tidy
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DBUILD_GAME=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Format check
+        run: |
+          clang-format --dry-run --Werror \
+            game_logic.h game_logic.cpp tests/test_game_logic.cpp
+
+      - name: Lint
+        run: |
+          clang-tidy game_logic.cpp tests/test_game_logic.cpp -p build
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
