@@ -9,6 +9,10 @@ Date Last Modified: 11/30/18
 #include <iostream>
 #include "SDL_Plotter.h"
 #include "functions.h"
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
 #include "LevelLoader.h"
 #include <fstream>
 #include <cstdlib>
@@ -22,6 +26,19 @@ using namespace std;
 const int ROW = 40;
 const int COL = 60;
 
+struct InputCommand {
+    bool moveLeft = false;
+    bool moveRight = false;
+    bool jump = false;
+};
+
+int main(int argc, char ** argv)
+{
+    unsigned int seed = static_cast<unsigned int>(time(0));
+    if (argc > 1) {
+        seed = static_cast<unsigned int>(strtoul(argv[1], nullptr, 10));
+    }
+    DeterministicRandom randomSource(seed);
 int main(int argc, char ** argv)
 {
     //random number seed
@@ -50,6 +67,39 @@ int main(int argc, char ** argv)
     const int WINDOW_WIDTH = 1000; //WINDOW WIDTH
     SDL_Plotter g(WINDOW_HEIGHT,WINDOW_WIDTH); //the window class
 
+    Sprite mario;
+    Sprite enemy(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
+    Sprite enemy1(randomSource.nextInt(WINDOW_WIDTH-40),199,40,40,60,60,60);
+    Sprite enemy2(randomSource.nextInt(WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Sprite enemy3(randomSource.nextInt(WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Sprite enemy4(randomSource.nextInt(WINDOW_WIDTH-40), 125,40,40,60,60,60);
+    Sprite enemy5(randomSource.nextInt(WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Sprite enemy6(randomSource.nextInt(WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Sprite enemy7(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy8(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy9(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy10(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy11(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+
+    Sprite coin1 (800,10,40,40,255,255,0);
+    Sprite coin2 (randomSource.nextInt(WINDOW_WIDTH),0,40,40,255,255,0);
+    Sprite coin3 (randomSource.nextInt(WINDOW_WIDTH),0,40,40,255,255,0);
+    Sprite coin4 (randomSource.nextInt(WINDOW_WIDTH),0,40,40,255,255,0);
+    Sprite coin5 (480,0,40,40,255,255,0);
+    Sprite coin6 (275,0,40,40,255,255,0);
+    Sprite coin7 (300,0,40,40,255,255,0);
+    Sprite coin8 (455,0,40,40,255,255,0);
+    Sprite coin9 (240,0,40,40,255,255,0);
+    Sprite coin10 (40,0,40,40,255,255,0);
+    Sprite coin11 (20,0,40,40,255,255,0);
+    Sprite coin12 (900,0,40,40,255,255,0);
+    Sprite coin13 (600,0,40,40,255,255,0);
+    Sprite coin14 (700,0,40,40,255,255,0);
+    Sprite coin15 (800,0,40,40,255,255,0);
+
+    Sprite enemies[12] = {enemy, enemy1, enemy2, enemy3, enemy4, enemy5,
+                            enemy6, enemy7, enemy8, enemy9, enemy10, enemy11}; //enemies array
+    Sprite coins[15]= {coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9, coin10,
     char keyStroke; // used to determine what key is hit
     Sprite mario;
     vector<EntityRecord> enemyRecords = levelData.recordsByType("enemy");
@@ -226,6 +276,18 @@ int main(int argc, char ** argv)
 
 
 
+    // Platform Obstacles
+    Obstacle leftPlat1(25, 350, 0, 425); //left platform
+    Obstacle rightPlat1(25, 350, 650, 425); // right platform
+    Obstacle midPlat(25, 500, 250, 280); //middle platform
+    Obstacle topLeft(25, 350, 0, 125); //top left platform
+    Obstacle topRight(25, 350, 650, 125); //top right platform
+    Obstacle bottomPlat(25, WINDOW_WIDTH, 0, WINDOW_HEIGHT - 25); //floor
+    Obstacle tubeSide1(75,25,0,50);//tube on left side of screen for enemies and coins
+    Obstacle tubeTop1(25,50,0,50);//tube on left side of screen for enemies and coins
+    Obstacle tubeSide2(75,25,975,50);//tube on right side of screen for enemies and coins
+    Obstacle tubeTop2(25,50,945,50);//tube on right side of screen for enemies and coins
+    Block pow(36,36,482,350); //Sam changed this
     // Platform Obstacles loaded from level data
     Obstacle platforms[6];
     for (int i = 0; i < 6; i++) {
@@ -267,6 +329,7 @@ int main(int argc, char ** argv)
     //cout<<bottomPlat.getPosY()<<endl;
 
     //obstacle array
+    Obstacle platforms[6] = {leftPlat1,rightPlat1,midPlat,topLeft,topRight,bottomPlat};
     Platform platforms[6] = {leftPlat1,rightPlat1,midPlat,topLeft,topRight,bottomPlat};
 
 
@@ -279,6 +342,97 @@ int main(int argc, char ** argv)
     bool doneKilling = true;
 
     bool facingRight = true; //if mario is facing right
+    const double FIXED_TICK_SECONDS = 1.0 / 60.0;
+    double accumulator = 0.0;
+    chrono::steady_clock::time_point previousTime = chrono::steady_clock::now();
+
+    while (!g.getQuit()) // ONE FRAME OF THE LOOP
+    {
+        chrono::steady_clock::time_point currentTime = chrono::steady_clock::now();
+        double frameSeconds = chrono::duration<double>(currentTime - previousTime).count();
+        previousTime = currentTime;
+        if (frameSeconds > 0.25) {
+            frameSeconds = 0.25;
+        }
+        accumulator += frameSeconds;
+
+        InputCommand inputCommand;
+        while (g.kbhit()) {
+            char currentKey = g.getKey();
+            if (currentKey == LEFT_ARROW || currentKey == 'A') {
+                inputCommand.moveLeft = true;
+            } else if (currentKey == RIGHT_ARROW || currentKey == 'D') {
+                inputCommand.moveRight = true;
+            } else if (currentKey == ' ') {
+                inputCommand.jump = true;
+            }
+        }
+
+        while (accumulator >= FIXED_TICK_SECONDS) {
+            accumulator -= FIXED_TICK_SECONDS;
+
+            if (inputCommand.jump && !doneJumping && mario.getPosY() >= 10) {
+                mario.addPosY(-6);
+                positionIncrement += 1;
+                if (positionIncrement >= 50) {
+                    doneJumping = true;
+                }
+            }
+            if (inputCommand.moveLeft && !inputCommand.moveRight) {
+                mario.move(LEFT_ARROW, WINDOW_HEIGHT, WINDOW_WIDTH);
+                facingRight = false;
+            } else if (inputCommand.moveRight && !inputCommand.moveLeft) {
+                mario.move(RIGHT_ARROW, WINDOW_HEIGHT, WINDOW_WIDTH);
+                facingRight = true;
+            }
+
+            if (mario.getGravityStatus()) {
+                mario.gravity(WINDOW_HEIGHT, WINDOW_WIDTH);
+            }
+
+            for (int i = 0; i < numEnemies; i++) {
+                if (mario.isTouchingTopOf(enemies[i]) && doneKilling) {
+                    kill(enemies[i]);
+                    deadEnemies++;
+                    score += 1;
+                    mario.setGravity(false);
+                    mario.addPosY(-10);
+                    cout << "\nEnemy killed! " << numEnemies - deadEnemies << " remaining.\n";
+                    doneKilling = false;
+                } else if (mario.collidesWith(enemies[i]) && mario.getPosY()+mario.getHeight() > enemies[i].getPosY() && !enemies[i].getDead()) {
+                    mario.setPosX(WINDOW_WIDTH / 2);
+                    mario.setPosY(30);
+                    marioLives -= 1;
+                    cout << "\nYou have died! " << marioLives << " lives remaining.\n";
+                }
+            }
+
+            for (int i = 0; i < numEnemies; i++) {
+                if (!enemies[i].getDead()) {
+                    if (i % 2 == 0) {
+                        enemies[i].autoMove();
+                    } else {
+                        enemies[i].autoMove1();
+                    }
+                } else {
+                    enemies[i].setPosY(0);
+                }
+            }
+            grav(enemies, numEnemies);
+
+            for (int i = 0; i < numCoins; i++) {
+                if (!coins[i].getDead()) {
+                    if (i % 2 == 0) {
+                        coins[i].autoMove2();
+                    } else {
+                        coins[i].autoMove3();
+                    }
+                } else {
+                    coins[i].setPosY(0);
+                }
+            }
+            grav(coins, numCoins);
+
 
     while (!g.getQuit()) // ONE FRAME OF THE LOOP
     {
@@ -468,6 +622,18 @@ int main(int argc, char ** argv)
                 mario.setPosX(0);
             }
 
+            checkPos(enemies, numEnemies);
+            checkPos(coins, numCoins);
+
+            for (int i = 0; i < numCoins; i++) {
+                if (mario.collidesWith(coins[i]) && !coins[i].getDead()) {
+                    score += 1;
+                    kill(coins[i]);
+                    cout << "\nYou got a coin" << endl;
+                }
+            }
+
+            for (int i = 0; i < 6; i++) {
             //teleport enemies to opposite side
             checkPos(&enemies[0], numEnemies);
 
@@ -508,6 +674,16 @@ int main(int argc, char ** argv)
                     positionIncrement = 0;
                     doneJumping = false;
                 }
+            }
+
+            if (mario.collidesWith(pow)) {
+                mario.setPosX(50);
+                mario.setPosY(50);
+            }
+
+            for (int i = 0; i < numEnemies; i++) {
+                if (collided(enemies[i], platforms, 6)) {
+                    enemies[i].setGravity(false);
 
                     //mario to power button
             if (mario.collidesWith(pow)) {
@@ -531,6 +707,15 @@ int main(int argc, char ** argv)
                 }
             }
 
+            for (int i = 0; i < numCoins; i++) {
+                if (collided(coins[i], platforms, 6)) {
+                    coins[i].setGravity(false);
+                } else {
+                    coins[i].setGravity(true);
+                }
+            }
+
+            if (collided(mario, platforms, 6)) {
 //COIN TO PLATFORM COLLISION
         for(int i = 0; i < numCoins; i++){
             if (collided(coins[i], platforms, 6)) {
@@ -561,6 +746,17 @@ int main(int argc, char ** argv)
                 positionIncrement = 0;
                 doneJumping = false;
                 doneKilling = true;
+            } else {
+                mario.setGravity(true);
+            }
+
+            if (marioLives == 0) {
+                g.setQuit(true);
+            }
+
+            if (deadEnemies == numEnemies) {
+                level++;
+                reviveAll(enemies, numEnemies);
             } else
                 mario.setGravity(true);
 
@@ -589,6 +785,62 @@ int main(int argc, char ** argv)
                 }
             }
 
+            if (level == 6) {
+                cout << "You won" << endl;
+                g.setQuit(true);
+            }
+
+            inputCommand.jump = false;
+        }
+
+        for (int col = 0; col < WINDOW_WIDTH; col++) {
+            for (int row = 0; row < WINDOW_HEIGHT; row++) {
+                g.plotPixel(col, row, 0, 0, 0);
+            }
+        }
+
+        for (int xd = 0; xd < ROW; xd++) {
+            for (int yd = 0; yd < COL; yd++) {
+                g.plotPixel(yd, xd, pic[xd][yd].r, pic[xd][yd].g, pic[xd][yd].b);
+            }
+        }
+
+        for (int i = 0; i < 6; i++) {
+            platforms[i].drawObstacle(g,255,255,255,0,0,0);
+        }
+        tubeSide1.drawObstacle(g, 102, 204, 0);
+        tubeTop1.drawObstacle(g, 102, 204, 0);
+        tubeSide2.drawObstacle(g, 102, 204, 0);
+        tubeTop2.drawObstacle(g, 102, 204, 0);
+        pow.drawObstacle(g, blockPixel);
+
+        bool marioIsJumping = mario.getGravityStatus() || !doneJumping;
+        if (marioIsJumping) {
+            mario.drawMarioPixelArt(g, marioPixelJump, facingRight);
+        } else {
+            mario.drawMarioPixelArt(g, marioPixelStill, facingRight);
+        }
+
+        for (int i = 0; i < numEnemies; i++) {
+            if (!enemies[i].getDead()) {
+                enemies[i].drawMarioPixelArt(g, enemyPixel, facingRight);
+            }
+        }
+
+        for (int i = 0; i < numCoins; i++) {
+            if (!coins[i].getDead()) {
+                coins[i].drawCoinPixelArt(g, coinPixel);
+            }
+        }
+
+        numDisplay(g, scoreVis, marioLives, 65, 0);
+        numDisplay(g, livesVis, score,  65, 20);
+
+        g.update();
+    }
+
+
+}
             //Print score and lives to screen
             numDisplay(g, scoreVis, marioLives, 65, 0);
             numDisplay(g, livesVis, score,  65, 20);
