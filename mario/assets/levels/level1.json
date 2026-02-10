@@ -1,0 +1,53 @@
+{
+  "entities": [
+    {"type":"enemy","x":100,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"enemy","x":280,"y":199,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"enemy","x":430,"y":500,"width":40,"height":40,"behavior.direction":1},
+    {"type":"enemy","x":620,"y":399,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"enemy","x":760,"y":125,"width":40,"height":40,"behavior.direction":1},
+    {"type":"enemy","x":870,"y":399,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"enemy","x":150,"y":500,"width":40,"height":40,"behavior.direction":1},
+    {"type":"enemy","x":240,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"enemy","x":350,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"enemy","x":520,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"enemy","x":680,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"enemy","x":840,"y":0,"width":40,"height":40,"behavior.direction":-1},
+
+    {"type":"coin","x":800,"y":10,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":125,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":210,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":320,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":480,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":275,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":300,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":455,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":240,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":40,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":20,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":900,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":600,"y":0,"width":40,"height":40,"behavior.direction":1},
+    {"type":"coin","x":700,"y":0,"width":40,"height":40,"behavior.direction":-1},
+    {"type":"coin","x":800,"y":0,"width":40,"height":40,"behavior.direction":1},
+
+    {"type":"platform","x":0,"y":425,"width":350,"height":25},
+    {"type":"platform","x":650,"y":425,"width":350,"height":25},
+    {"type":"platform","x":250,"y":280,"width":500,"height":25},
+    {"type":"platform","x":0,"y":125,"width":350,"height":25},
+    {"type":"platform","x":650,"y":125,"width":350,"height":25},
+    {"type":"platform","x":0,"y":575,"width":1000,"height":25},
+
+    {"type":"tube","x":0,"y":50,"width":25,"height":75},
+    {"type":"tube","x":0,"y":50,"width":50,"height":25},
+    {"type":"tube","x":975,"y":50,"width":25,"height":75},
+    {"type":"tube","x":945,"y":50,"width":50,"height":25},
+
+    {"type":"pow","x":482,"y":350,"width":36,"height":36}
+  ],
+  "progression": {
+    "startLevel": 1,
+    "initialEnemyCount": 4,
+    "initialCoinCount": 1,
+    "enemyIncrementPerLevel": 2,
+    "maxLevel": 6
+  }
+}
