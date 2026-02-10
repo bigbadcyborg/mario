@@ -370,6 +370,19 @@ public:
 
 };
 
+class DeterministicRandom {
+private:
+    unsigned int state;
+
+public:
+    explicit DeterministicRandom(unsigned int seed = 1U);
+    void reseed(unsigned int seed);
+    unsigned int next();
+    int nextInt(int exclusiveMax);
+};
+
+//=============================================================================
+
 //=============================================================================
 //needed for graphic printing
 struct pixel{

@@ -17,6 +17,32 @@ using namespace std;
 const int WINDOW_HEIGHT = 600;
 const int WINDOW_WIDTH = 1000;
 
+DeterministicRandom::DeterministicRandom(unsigned int seed) : state(seed)
+{
+    if (state == 0U) {
+        state = 1U;
+    }
+}
+
+void DeterministicRandom::reseed(unsigned int seed)
+{
+    state = (seed == 0U) ? 1U : seed;
+}
+
+unsigned int DeterministicRandom::next()
+{
+    state = state * 1664525U + 1013904223U;
+    return state;
+}
+
+int DeterministicRandom::nextInt(int exclusiveMax)
+{
+    if (exclusiveMax <= 0) {
+        return 0;
+    }
+    return static_cast<int>(next() % static_cast<unsigned int>(exclusiveMax));
+}
+
 //=============================================================================
 // OBSTACLE CLASS
 //-----------------------------------------------------------------------------

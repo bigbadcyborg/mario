@@ -12,15 +12,25 @@ Date Last Modified: 11/30/18
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
+#include <chrono>
 
 using namespace std;
 const int ROW = 40;
 const int COL = 60;
 
+struct InputCommand {
+    bool moveLeft = false;
+    bool moveRight = false;
+    bool jump = false;
+};
+
 int main(int argc, char ** argv)
 {
-    //random number seed
-    srand(time(0));
+    unsigned int seed = static_cast<unsigned int>(time(0));
+    if (argc > 1) {
+        seed = static_cast<unsigned int>(strtoul(argv[1], nullptr, 10));
+    }
+    DeterministicRandom randomSource(seed);
 
     int positionIncrement = 0; //for jumping
     bool doneJumping = false; //for jumping
@@ -38,25 +48,24 @@ int main(int argc, char ** argv)
     const int WINDOW_WIDTH = 1000; //WINDOW WIDTH
     SDL_Plotter g(WINDOW_HEIGHT,WINDOW_WIDTH); //the window class
 
-    char keyStroke; // used to determine what key is hit
     Sprite mario;
-    Sprite enemy(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
-    Sprite enemy1(rand() % (WINDOW_WIDTH-40),199,40,40,60,60,60);
-    Sprite enemy2(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
-    Sprite enemy3(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
-    Sprite enemy4(rand() % (WINDOW_WIDTH-40), 125,40,40,60,60,60);
-    Sprite enemy5(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
-    Sprite enemy6(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
-    Sprite enemy7(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy8(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy9(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy10(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
-    Sprite enemy11(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
+    Sprite enemy1(randomSource.nextInt(WINDOW_WIDTH-40),199,40,40,60,60,60);
+    Sprite enemy2(randomSource.nextInt(WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Sprite enemy3(randomSource.nextInt(WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Sprite enemy4(randomSource.nextInt(WINDOW_WIDTH-40), 125,40,40,60,60,60);
+    Sprite enemy5(randomSource.nextInt(WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Sprite enemy6(randomSource.nextInt(WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Sprite enemy7(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy8(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy9(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy10(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Sprite enemy11(randomSource.nextInt(WINDOW_WIDTH-40),0,40,40,60,60,60);
 
     Sprite coin1 (800,10,40,40,255,255,0);
-    Sprite coin2 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
-    Sprite coin3 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
-    Sprite coin4 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Sprite coin2 (randomSource.nextInt(WINDOW_WIDTH),0,40,40,255,255,0);
+    Sprite coin3 (randomSource.nextInt(WINDOW_WIDTH),0,40,40,255,255,0);
+    Sprite coin4 (randomSource.nextInt(WINDOW_WIDTH),0,40,40,255,255,0);
     Sprite coin5 (480,0,40,40,255,255,0);
     Sprite coin6 (275,0,40,40,255,255,0);
     Sprite coin7 (300,0,40,40,255,255,0);
@@ -220,280 +229,158 @@ int main(int argc, char ** argv)
     bool doneKilling = true;
 
     bool facingRight = true; //if mario is facing right
+    const double FIXED_TICK_SECONDS = 1.0 / 60.0;
+    double accumulator = 0.0;
+    chrono::steady_clock::time_point previousTime = chrono::steady_clock::now();
 
     while (!g.getQuit()) // ONE FRAME OF THE LOOP
     {
+        chrono::steady_clock::time_point currentTime = chrono::steady_clock::now();
+        double frameSeconds = chrono::duration<double>(currentTime - previousTime).count();
+        previousTime = currentTime;
+        if (frameSeconds > 0.25) {
+            frameSeconds = 0.25;
+        }
+        accumulator += frameSeconds;
 
-            //draw background
-            for (int col = 0; col < WINDOW_WIDTH; col++)
-                for (int row = 0; row < WINDOW_HEIGHT; row++) {
-                    g.plotPixel(col, row, 0, 0, 0);
-                }
+        InputCommand inputCommand;
+        while (g.kbhit()) {
+            char currentKey = g.getKey();
+            if (currentKey == LEFT_ARROW || currentKey == 'A') {
+                inputCommand.moveLeft = true;
+            } else if (currentKey == RIGHT_ARROW || currentKey == 'D') {
+                inputCommand.moveRight = true;
+            } else if (currentKey == ' ') {
+                inputCommand.jump = true;
+            }
+        }
 
-            //draws score and lives
-            for (int xd = 0; xd < ROW; xd++) {
-                for (int yd = 0; yd < COL; yd++) {
+        while (accumulator >= FIXED_TICK_SECONDS) {
+            accumulator -= FIXED_TICK_SECONDS;
 
-                    g.plotPixel(yd, xd, pic[xd][yd].r, pic[xd][yd].g, pic[xd][yd].b);
+            if (inputCommand.jump && !doneJumping && mario.getPosY() >= 10) {
+                mario.addPosY(-6);
+                positionIncrement += 1;
+                if (positionIncrement >= 50) {
+                    doneJumping = true;
                 }
             }
-            //draw platforms
-            for (int i = 0; i < 6; i++) {
-                platforms[i].drawObstacle(g,255,255,255,0,0,0);
+            if (inputCommand.moveLeft && !inputCommand.moveRight) {
+                mario.move(LEFT_ARROW, WINDOW_HEIGHT, WINDOW_WIDTH);
+                facingRight = false;
+            } else if (inputCommand.moveRight && !inputCommand.moveLeft) {
+                mario.move(RIGHT_ARROW, WINDOW_HEIGHT, WINDOW_WIDTH);
+                facingRight = true;
             }
-            tubeSide1.drawObstacle(g, 102, 204, 0);
-            tubeTop1.drawObstacle(g, 102, 204, 0);
 
-            tubeSide2.drawObstacle(g, 102, 204, 0);
-            tubeTop2.drawObstacle(g, 102, 204, 0);
-            pow.drawObstacle(g, blockPixel); //SS this is changed plz upload
+            if (mario.getGravityStatus()) {
+                mario.gravity(WINDOW_HEIGHT, WINDOW_WIDTH);
+            }
 
-            // draw mario at the beginning of each frame
-            //mario.draw(g);
+            for (int i = 0; i < numEnemies; i++) {
+                if (mario.isTouchingTopOf(enemies[i]) && doneKilling) {
+                    kill(enemies[i]);
+                    deadEnemies++;
+                    score += 1;
+                    mario.setGravity(false);
+                    mario.addPosY(-10);
+                    cout << "\nEnemy killed! " << numEnemies - deadEnemies << " remaining.\n";
+                    doneKilling = false;
+                } else if (mario.collidesWith(enemies[i]) && mario.getPosY()+mario.getHeight() > enemies[i].getPosY() && !enemies[i].getDead()) {
+                    mario.setPosX(WINDOW_WIDTH / 2);
+                    mario.setPosY(30);
+                    marioLives -= 1;
+                    cout << "\nYou have died! " << marioLives << " lives remaining.\n";
+                }
+            }
 
-
-        /*//coin gravity
-        for(int i = 0; i < numCoins; i++)
-            if (coins[i].getGravityStatus()) {
-                coins[i].gravity(WINDOW_HEIGHT, WINDOW_WIDTH);
-            }*/
-
-
-
-        mario.drawMarioPixelArt(g, marioPixelStill, facingRight); //SS all new
-
-
-        //MARIO MOVEMENTS
-            if (g.getKey()) {
-                {
-                    keyStroke = g.getKey();
-                    //jump if space bar hit, not jumping, ALSO cant go through ceiling
-                    if (keyStroke == ' ' && !doneJumping && mario.getPosY() >= 10) {
-                        // mario.setColors(0, 0, 0); //color black
-                        mario.addPosY(-6); //move y up
-                        mario.drawMarioPixelArt(g, marioPixelJump, facingRight); //draw
-                        //mario.setColors(255, 255, 255); //color
-                        positionIncrement += 1; //accumulate
-                        if (positionIncrement >= 50) {
-                            doneJumping = true;
-                        }
-
+            for (int i = 0; i < numEnemies; i++) {
+                if (!enemies[i].getDead()) {
+                    if (i % 2 == 0) {
+                        enemies[i].autoMove();
                     } else {
-                        mario.move(keyStroke, WINDOW_HEIGHT, WINDOW_WIDTH); //otherwise move
-                        if (keyStroke == RIGHT_ARROW){
-                            facingRight = true;
-                        } else if (keyStroke == LEFT_ARROW){
-                            facingRight = false;
-                        }
+                        enemies[i].autoMove1();
                     }
+                } else {
+                    enemies[i].setPosY(0);
                 }
             }
+            grav(enemies, numEnemies);
 
-        //activate gravity
-        if (mario.getGravityStatus()) {
-            mario.gravity(WINDOW_HEIGHT, WINDOW_WIDTH);
-            mario.drawMarioPixelArt(g, marioPixelJump, facingRight);
-        }
-
-
-
-
-
-        //if mario's bottom touches top of enemy, kill enemy
-        //else if mario touches enemy kill mario
-        for (int i = 0; i < numEnemies; i++) {
-            if (mario.isTouchingTopOf(enemies[i]) & doneKilling) {
-                kill(enemies[i]);
-                deadEnemies++ ;
-                score += 1;
-                mario.setGravity(false);
-                mario.addPosY(-100);
-                mario.drawMarioPixelArt(g, marioPixelJump, facingRight);
-                cout << "\nEnemy killed! " << numEnemies - deadEnemies << " remaining.\n";
-                doneKilling = false;
-
-            }
-                //kill mario
-            else if (mario.collidesWith(enemies[i]) && !enemies[i].getDead()) {
-                mario.setPosX(WINDOW_WIDTH / 2);
-                mario.setPosY(30);
-                marioLives -= 1;
-                cout << "\nYou have died! " << marioLives << " lives remaining.\n";
-            }
-        }
-
-
-        //dont remove
-        if(mario.getGravityStatus())
-        mario.gravity(WINDOW_HEIGHT,WINDOW_WIDTH);
-
-        //if mario's bottom touches top of enemy, kill enemy
-        //else if mario touches enemy kill mario
-        for (int i = 0; i < numEnemies; i++) {
-            if (mario.isTouchingTopOf(enemies[i]) & doneKilling) {
-                kill(enemies[i]);
-                deadEnemies++ ;
-                score += 1;
-                mario.setGravity(false);
-                mario.addPosY(-10);
-                cout << "\nEnemy killed! " << numEnemies - deadEnemies << " remaining.\n";
-                doneKilling = false;
-
-            }
-                //kill mario
-            else if (mario.collidesWith(enemies[i]) && mario.getPosY()+mario.getHeight() > enemies[i].getPosY() && !enemies[i].getDead()) {
-                mario.setPosX(WINDOW_WIDTH / 2);
-                mario.setPosY(30);
-                marioLives -= 1;
-                cout << "\nYou have died! " << marioLives << " lives remaining.\n";
-            }
-        }
-
-        //if enemy not dead draw and move
-        // drawEnemies(g, enemies, numEnemies);
-        //turn on gravity for enemies
-        //Draw enemies and automove
-        for (int i = 0; i < numEnemies; i++) {
-            if (!enemies[i].getDead()) {
-
-
-                if (i % 2 == 0) {
-                    enemies[i].autoMove();
+            for (int i = 0; i < numCoins; i++) {
+                if (!coins[i].getDead()) {
+                    if (i % 2 == 0) {
+                        coins[i].autoMove2();
+                    } else {
+                        coins[i].autoMove3();
+                    }
+                } else {
+                    coins[i].setPosY(0);
                 }
-                //move other way
-                if (i % 2 != 0) {
-                    enemies[i].autoMove1();
-                }
-
-                enemies[i].drawMarioPixelArt(g, enemyPixel, facingRight);
             }
-            else
-                enemies[i].setPosY(0);
-        }
-        grav(enemies, numEnemies);
+            grav(coins, numCoins);
 
-        //draw coins if theyre not dead
-        for (int i = 0; i < numCoins; i++) {
-            if (!coins[i].getDead()) {
-                if (i % 2 == 0) {
-                    coins[i].autoMove2();
-                }
-                //move other way
-                if (i % 2 != 0) {
-                    coins[i].autoMove3();
-                }
-                coins[i].drawCoinPixelArt(g, coinPixel);
-            }
-            else
-                coins[i].setPosY(0);
-        }
-        grav(coins, numCoins);
-
-
-
-
-
-
-
-
-
-            //S on reaching side of window, teleports to opposite side
             if (mario.getPosX() == 0) {
                 mario.setPosX(960);
             } else if (mario.getPosX() + mario.getWidth() == 1000) {
                 mario.setPosX(0);
             }
 
-            //teleport enemies to opposite side
             checkPos(enemies, numEnemies);
+            checkPos(coins, numCoins);
 
-            //coin teleport
-            if (coin1.getPosX() == 0 && coin1.getPosY() + coin1.getWidth() > 10) { //S
-                coin1.setPosX(960);
-            } else if (coin1.getPosX() + coin1.getWidth() == 1000) {
-                coin1.setPosX(0);
+            for (int i = 0; i < numCoins; i++) {
+                if (mario.collidesWith(coins[i]) && !coins[i].getDead()) {
+                    score += 1;
+                    kill(coins[i]);
+                    cout << "\nYou got a coin" << endl;
+                }
             }
 
-            //==============================COLLISIONS===============================
-
-        //mario to coin
-        for(int i =0; i<numCoins; i++)
-        {
-            if (mario.collidesWith(coins[i]) && !coins[i].getDead()) {
-                score += 1;
-                kill(coins[i]);
-                cout<<"\nYou got a coin"<<endl;
-            }
-        }
-
-
-        //if sprite collides with any obstacle,
-            //set positionIncrement to zero(for jumping)
-
-             //mario to platform collision
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 6; i++) {
                 if (mario.isTouchingTopOf(platforms[i])) {
                     mario.setGravity(false);
                     positionIncrement = 0;
                     doneJumping = false;
                 }
-
-                    //mario to power button
-            if (mario.collidesWith(pow)) {
-                //mario.setGravity(false);
-                mario.setPosX(50);
-                mario.setPosY(50);
-                //mario.setColors(0, 0, 0);
-
             }
 
+            if (mario.collidesWith(pow)) {
+                mario.setPosX(50);
+                mario.setPosY(50);
+            }
 
-
-            //ENEMIES TO PLATFORM COLLISION
             for (int i = 0; i < numEnemies; i++) {
                 if (collided(enemies[i], platforms, 6)) {
                     enemies[i].setGravity(false);
-                    //positionIncrement = 0;
                 } else {
                     enemies[i].setGravity(true);
                 }
             }
 
-//COIN TO PLATFORM COLLISION
-        for(int i = 0; i < numCoins; i++){
-            if (collided(coins[i], platforms, 6)) {
-                coins[i].setGravity(false);
-                //cout << "COIN COLLIDED!!!";
-            } else {
-                coins[i].setGravity(true);
-                grav(coins, numCoins);
+            for (int i = 0; i < numCoins; i++) {
+                if (collided(coins[i], platforms, 6)) {
+                    coins[i].setGravity(false);
+                } else {
+                    coins[i].setGravity(true);
+                }
             }
-    }
-    checkPos(coins, numCoins);
-    //checkPos(enemies, numEnemies - deadEnemies);
 
-            //=================================================================================
-
-
-
-
-            //recheck mario collision and set gravity accordingly
             if (collided(mario, platforms, 6)) {
                 mario.setGravity(false);
                 positionIncrement = 0;
                 doneJumping = false;
                 doneKilling = true;
-            } else
+            } else {
                 mario.setGravity(true);
+            }
 
-
-            if (marioLives == 0) //mario runs out of lives, quit game
+            if (marioLives == 0) {
                 g.setQuit(true);
+            }
 
-//all enemies killed, next level
             if (deadEnemies == numEnemies) {
                 level++;
-                //bring all enemies back to life
                 reviveAll(enemies, numEnemies);
                 numEnemies += 2;
                 coin1.setDead(true);
@@ -504,21 +391,59 @@ int main(int argc, char ** argv)
                 }
             }
 
-            //Print score and lives to screen
-            numDisplay(g, scoreVis, marioLives, 65, 0);
-            numDisplay(g, livesVis, score,  65, 20);
+            if (level == 6) {
+                cout << "You won" << endl;
+                g.setQuit(true);
+            }
 
-        if(level == 6)
-        {
-            cout<<"You won"<<endl;
-            g.setQuit(true);
+            inputCommand.jump = false;
         }
 
-
-        if (g.kbhit()) {
-            g.getKey();
+        for (int col = 0; col < WINDOW_WIDTH; col++) {
+            for (int row = 0; row < WINDOW_HEIGHT; row++) {
+                g.plotPixel(col, row, 0, 0, 0);
+            }
         }
+
+        for (int xd = 0; xd < ROW; xd++) {
+            for (int yd = 0; yd < COL; yd++) {
+                g.plotPixel(yd, xd, pic[xd][yd].r, pic[xd][yd].g, pic[xd][yd].b);
+            }
+        }
+
+        for (int i = 0; i < 6; i++) {
+            platforms[i].drawObstacle(g,255,255,255,0,0,0);
+        }
+        tubeSide1.drawObstacle(g, 102, 204, 0);
+        tubeTop1.drawObstacle(g, 102, 204, 0);
+        tubeSide2.drawObstacle(g, 102, 204, 0);
+        tubeTop2.drawObstacle(g, 102, 204, 0);
+        pow.drawObstacle(g, blockPixel);
+
+        bool marioIsJumping = mario.getGravityStatus() || !doneJumping;
+        if (marioIsJumping) {
+            mario.drawMarioPixelArt(g, marioPixelJump, facingRight);
+        } else {
+            mario.drawMarioPixelArt(g, marioPixelStill, facingRight);
+        }
+
+        for (int i = 0; i < numEnemies; i++) {
+            if (!enemies[i].getDead()) {
+                enemies[i].drawMarioPixelArt(g, enemyPixel, facingRight);
+            }
+        }
+
+        for (int i = 0; i < numCoins; i++) {
+            if (!coins[i].getDead()) {
+                coins[i].drawCoinPixelArt(g, coinPixel);
+            }
+        }
+
+        numDisplay(g, scoreVis, marioLives, 65, 0);
+        numDisplay(g, livesVis, score,  65, 20);
+
         g.update();
     }
-}
 
+
+}
