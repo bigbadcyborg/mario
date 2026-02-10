@@ -14,6 +14,9 @@ Date Last Modified: 11/30/18
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
 
 using namespace std;
 const int ROW = 40;
@@ -38,6 +41,10 @@ int main(int argc, char ** argv)
     int numEnemies = levelData.progression.initialEnemyCount;
     int deadEnemies = 0;
     int numCoins = levelData.progression.initialCoinCount;
+    int level = 1;
+    int numEnemies = 4;
+    int deadEnemies = 0;
+    int numCoins = 1;
 
     const int WINDOW_HEIGHT = 600; // GAME HEIGHT
     const int WINDOW_WIDTH = 1000; //WINDOW WIDTH
@@ -66,6 +73,40 @@ int main(int argc, char ** argv)
                                coinRecords[i].height, coinRecords[i].width,
                                255, 255, 0));
     }
+    Player mario;
+    Enemy enemy(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
+    Enemy enemy1(rand() % (WINDOW_WIDTH-40),199,40,40,60,60,60);
+    Enemy enemy2(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Enemy enemy3(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Enemy enemy4(rand() % (WINDOW_WIDTH-40), 125,40,40,60,60,60);
+    Enemy enemy5(rand() % (WINDOW_WIDTH-40),399,40,40,60,60,60);
+    Enemy enemy6(rand() % (WINDOW_WIDTH-40),500,40,40,60,60,60);
+    Enemy enemy7(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy8(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy9(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy10(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+    Enemy enemy11(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60);
+
+    Coin coin1 (800,10,40,40,255,255,0);
+    Coin coin2 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Coin coin3 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Coin coin4 (rand() % WINDOW_WIDTH,0,40,40,255,255,0);
+    Coin coin5 (480,0,40,40,255,255,0);
+    Coin coin6 (275,0,40,40,255,255,0);
+    Coin coin7 (300,0,40,40,255,255,0);
+    Coin coin8 (455,0,40,40,255,255,0);
+    Coin coin9 (240,0,40,40,255,255,0);
+    Coin coin10 (40,0,40,40,255,255,0);
+    Coin coin11 (20,0,40,40,255,255,0);
+    Coin coin12 (900,0,40,40,255,255,0);
+    Coin coin13 (600,0,40,40,255,255,0);
+    Coin coin14 (700,0,40,40,255,255,0);
+    Coin coin15 (800,0,40,40,255,255,0);
+
+    Enemy enemies[12] = {enemy, enemy1, enemy2, enemy3, enemy4, enemy5,
+                            enemy6, enemy7, enemy8, enemy9, enemy10, enemy11}; //enemies array
+    Coin coins[15]= {coin1, coin2, coin3, coin4, coin5, coin6, coin7, coin8, coin9, coin10,
+                       coin11, coin12, coin13, coin14, coin15};
 
     //reads in file for score and lives
     ifstream infile;
@@ -125,6 +166,8 @@ int main(int argc, char ** argv)
     infile.ignore(100, '\n');
     for (int col = 0; col < 40; col++){
         for (int row = 0; row < 40; row++){
+    for (int col = 0; col < enemy.getWidth(); col++){
+        for (int row = 0; row < enemy.getHeight(); row++){
             infile >> enemyPixel[col][row];
         }
     }
@@ -135,6 +178,8 @@ int main(int argc, char ** argv)
     infile.ignore(100, '\n');
     for (int col = 0; col < 40; col++){
         for (int row = 0; row < 40; row++){
+    for (int col = 0; col < coin1.getWidth(); col++){
+        for (int row = 0; row < coin1.getHeight(); row++){
             infile >> coinPixel[col][row];
         }
     }
@@ -195,6 +240,18 @@ int main(int argc, char ** argv)
     }
 
     Block pow(powRecords[0].height, powRecords[0].width, powRecords[0].x, powRecords[0].y);
+    // Platform Obstacles
+    Platform leftPlat1(25, 350, 0, 425); //left platform
+    Platform rightPlat1(25, 350, 650, 425); // right platform
+    Platform midPlat(25, 500, 250, 280); //middle platform
+    Platform topLeft(25, 350, 0, 125); //top left platform
+    Platform topRight(25, 350, 650, 125); //top right platform
+    Platform bottomPlat(25, WINDOW_WIDTH, 0, WINDOW_HEIGHT - 25); //floor
+    Platform tubeSide1(75,25,0,50);//tube on left side of screen for enemies and coins
+    Platform tubeTop1(25,50,0,50);//tube on left side of screen for enemies and coins
+    Platform tubeSide2(75,25,975,50);//tube on right side of screen for enemies and coins
+    Platform tubeTop2(25,50,945,50);//tube on right side of screen for enemies and coins
+    PowerBlock pow(36,36,482,350); //Sam changed this
     int blockPixel[36][36];
     infile.open("powBlock.txt");
     if(!infile){
@@ -208,6 +265,16 @@ int main(int argc, char ** argv)
     }
     infile.close();
     //cout<<bottomPlat.getPosY()<<endl;
+
+    //obstacle array
+    Platform platforms[6] = {leftPlat1,rightPlat1,midPlat,topLeft,topRight,bottomPlat};
+
+
+    Entity* platformEntities[6] = {&platforms[0], &platforms[1], &platforms[2], &platforms[3], &platforms[4], &platforms[5]};
+    Entity* enemyEntities[12] = {&enemies[0], &enemies[1], &enemies[2], &enemies[3], &enemies[4], &enemies[5],
+                                &enemies[6], &enemies[7], &enemies[8], &enemies[9], &enemies[10], &enemies[11]};
+    Entity* coinEntities[15] = {&coins[0], &coins[1], &coins[2], &coins[3], &coins[4], &coins[5], &coins[6], &coins[7],
+                               &coins[8], &coins[9], &coins[10], &coins[11], &coins[12], &coins[13], &coins[14]};
 
     bool doneKilling = true;
 
@@ -236,6 +303,11 @@ int main(int argc, char ** argv)
             for (int i = 0; i < 4; i++) {
                 tubes[i].drawObstacle(g, 102, 204, 0);
             }
+            tubeSide1.drawObstacle(g, 102, 204, 0);
+            tubeTop1.drawObstacle(g, 102, 204, 0);
+
+            tubeSide2.drawObstacle(g, 102, 204, 0);
+            tubeTop2.drawObstacle(g, 102, 204, 0);
             pow.drawObstacle(g, blockPixel); //SS this is changed plz upload
 
             // draw mario at the beginning of each frame
@@ -361,6 +433,7 @@ int main(int argc, char ** argv)
                 enemies[i].setPosY(0);
         }
         grav(&enemies[0], numEnemies);
+        grav(enemyEntities, numEnemies);
 
         //draw coins if theyre not dead
         for (int i = 0; i < numCoins; i++) {
@@ -378,6 +451,7 @@ int main(int argc, char ** argv)
                 coins[i].setPosY(0);
         }
         grav(&coins[0], numCoins);
+        grav(coinEntities, numCoins);
 
 
 
@@ -402,6 +476,13 @@ int main(int argc, char ** argv)
                 coins[0].setPosX(960);
             } else if (coins[0].getPosX() + coins[0].getWidth() == 1000) {
                 coins[0].setPosX(0);
+            checkPos(enemyEntities, numEnemies);
+
+            //coin teleport
+            if (coin1.getPosX() == 0 && coin1.getPosY() + coin1.getWidth() > 10) { //S
+                coin1.setPosX(960);
+            } else if (coin1.getPosX() + coin1.getWidth() == 1000) {
+                coin1.setPosX(0);
             }
 
             //==============================COLLISIONS===============================
@@ -442,6 +523,7 @@ int main(int argc, char ** argv)
             //ENEMIES TO PLATFORM COLLISION
             for (int i = 0; i < numEnemies; i++) {
                 if (collided(enemies[i], platforms, 6)) {
+                if (collided(enemies[i], platformEntities, 6)) {
                     enemies[i].setGravity(false);
                     //positionIncrement = 0;
                 } else {
@@ -452,6 +534,7 @@ int main(int argc, char ** argv)
 //COIN TO PLATFORM COLLISION
         for(int i = 0; i < numCoins; i++){
             if (collided(coins[i], platforms, 6)) {
+            if (collided(coins[i], platformEntities, 6)) {
                 coins[i].setGravity(false);
                 //cout << "COIN COLLIDED!!!";
             } else {
@@ -460,6 +543,10 @@ int main(int argc, char ** argv)
             }
     }
     checkPos(&coins[0], numCoins);
+                grav(coinEntities, numCoins);
+            }
+    }
+    checkPos(coinEntities, numCoins);
     //checkPos(enemies, numEnemies - deadEnemies);
 
             //=================================================================================
@@ -469,6 +556,7 @@ int main(int argc, char ** argv)
 
             //recheck mario collision and set gravity accordingly
             if (collided(mario, platforms, 6)) {
+            if (collided(mario, platformEntities, 6)) {
                 mario.setGravity(false);
                 positionIncrement = 0;
                 doneJumping = false;
@@ -491,6 +579,10 @@ int main(int argc, char ** argv)
                 }
                 coins[0].setDead(true);
                 if (level < levelData.progression.maxLevel) {
+                reviveAll(enemyEntities, numEnemies);
+                numEnemies += 2;
+                coin1.setDead(true);
+                if (level < 6) {
                     cout << "\nLevel beat! Approaching level " << level;
                     cout << "\nNow spawning " << numEnemies << " enemies ... ";
                     deadEnemies = 0;
@@ -502,6 +594,7 @@ int main(int argc, char ** argv)
             numDisplay(g, livesVis, score,  65, 20);
 
         if(level == levelData.progression.maxLevel)
+        if(level == 6)
         {
             cout<<"You won"<<endl;
             g.setQuit(true);
@@ -515,3 +608,180 @@ int main(int argc, char ** argv)
     }
 }
 
+#include "SDL_Plotter.h"
+#include "functions.h"
+#include "src/GameTypes.h"
+#include "src/InputSystem.h"
+#include "src/PhysicsSystem.h"
+#include "src/CollisionSystem.h"
+#include "src/RenderSystem.h"
+#include "src/GameRulesSystem.h"
+
+using namespace std;
+
+namespace {
+
+void loadHud(GameAssets& assets) {
+    ifstream infile("foo.txt");
+    if (!infile) {
+        cout << "Error";
+        return;
+    }
+
+    for (int i = 0; i < ROW; i++) {
+        for (int k = 0; k < COL; k += 3) {
+            infile >> assets.hudPic[i][k].r;
+            infile >> assets.hudPic[i][k].g;
+            infile >> assets.hudPic[i][k].b;
+
+            assets.hudPic[i][k + 1] = assets.hudPic[i][k];
+            assets.hudPic[i][k + 2] = assets.hudPic[i][k];
+        }
+    }
+}
+
+void loadSpritePixels(const char* fileName, int pixels[40][40], int width, int height) {
+    ifstream infile(fileName);
+    if (!infile) {
+        cout << "Error";
+        return;
+    }
+
+    infile.ignore(100, '\n');
+    for (int col = 0; col < width; col++) {
+        for (int row = 0; row < height; row++) {
+            infile >> pixels[col][row];
+        }
+    }
+}
+
+void loadPowPixels(GameAssets& assets, const Block& pow) {
+    ifstream infile("powBlock.txt");
+    if (!infile) {
+        cout << "ERROR";
+        return;
+    }
+
+    infile.ignore(100, '\n');
+    for (int col = 0; col < pow.getWidth(); col++) {
+        for (int row = 0; row < pow.getHeight(); row++) {
+            infile >> assets.blockPixel[col][row];
+        }
+    }
+}
+
+void loadScoreboard(GameAssets& assets) {
+    ifstream scoreBoard("scoreBoard.txt");
+    if (!scoreBoard) {
+        cout << "ERROR";
+        return;
+    }
+
+    int scoreDig;
+    for (int i = 0; i < 18; i += 2) {
+        for (int p = 0; p < 22; p += 2) {
+            scoreBoard >> scoreDig;
+            int color = scoreDig == 1 ? 255 : 0;
+            assets.scoreVis[i][p].r = assets.scoreVis[i + 1][p + 1].r = assets.scoreVis[i + 1][p].r = assets.scoreVis[i][p + 1].r = color;
+            assets.scoreVis[i][p].g = assets.scoreVis[i + 1][p + 1].g = assets.scoreVis[i + 1][p].g = assets.scoreVis[i][p + 1].g = color;
+            assets.scoreVis[i][p].b = assets.scoreVis[i + 1][p + 1].b = assets.scoreVis[i + 1][p].b = assets.scoreVis[i][p + 1].b = color;
+
+            assets.livesVis[i][p].r = assets.livesVis[i + 1][p + 1].r = assets.livesVis[i + 1][p].r = assets.livesVis[i][p + 1].r = color;
+            assets.livesVis[i][p].g = assets.livesVis[i + 1][p + 1].g = assets.livesVis[i + 1][p].g = assets.livesVis[i][p + 1].g = color;
+            assets.livesVis[i][p].b = assets.livesVis[i + 1][p + 1].b = assets.livesVis[i + 1][p].b = assets.livesVis[i][p + 1].b = color;
+        }
+    }
+}
+
+GameWorld buildWorld() {
+    GameWorld world = {
+        Sprite(),
+        {
+            Sprite(rand() % (WINDOW_WIDTH - 40), 0, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 199, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 500, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 399, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 125, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 399, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 500, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 0, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 0, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 0, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 0, 40, 40, 60, 60, 60),
+            Sprite(rand() % (WINDOW_WIDTH - 40), 0, 40, 40, 60, 60, 60)
+        },
+        {
+            Sprite(800, 10, 40, 40, 255, 255, 0),
+            Sprite(rand() % WINDOW_WIDTH, 0, 40, 40, 255, 255, 0),
+            Sprite(rand() % WINDOW_WIDTH, 0, 40, 40, 255, 255, 0),
+            Sprite(rand() % WINDOW_WIDTH, 0, 40, 40, 255, 255, 0),
+            Sprite(480, 0, 40, 40, 255, 255, 0),
+            Sprite(275, 0, 40, 40, 255, 255, 0),
+            Sprite(300, 0, 40, 40, 255, 255, 0),
+            Sprite(455, 0, 40, 40, 255, 255, 0),
+            Sprite(240, 0, 40, 40, 255, 255, 0),
+            Sprite(40, 0, 40, 40, 255, 255, 0),
+            Sprite(20, 0, 40, 40, 255, 255, 0),
+            Sprite(900, 0, 40, 40, 255, 255, 0),
+            Sprite(600, 0, 40, 40, 255, 255, 0),
+            Sprite(700, 0, 40, 40, 255, 255, 0),
+            Sprite(800, 0, 40, 40, 255, 255, 0)
+        },
+        {
+            Obstacle(25, 350, 0, 425),
+            Obstacle(25, 350, 650, 425),
+            Obstacle(25, 500, 250, 280),
+            Obstacle(25, 350, 0, 125),
+            Obstacle(25, 350, 650, 125),
+            Obstacle(25, WINDOW_WIDTH, 0, WINDOW_HEIGHT - 25)
+        },
+        Obstacle(75, 25, 0, 50),
+        Obstacle(25, 50, 0, 50),
+        Obstacle(75, 25, 975, 50),
+        Obstacle(25, 50, 945, 50),
+        Block(36, 36, 482, 350)
+    };
+
+    return world;
+}
+
+}
+
+int main(int argc, char** argv) {
+    srand(time(0));
+
+    SDL_Plotter plotter(WINDOW_HEIGHT, WINDOW_WIDTH);
+
+    GameState state;
+    GameWorld world = buildWorld();
+    GameAssets assets;
+
+    loadHud(assets);
+    loadSpritePixels("marioStill.txt", assets.marioPixelStill, world.mario.getWidth(), world.mario.getHeight());
+    loadSpritePixels("marioJump.txt", assets.marioPixelJump, world.mario.getWidth(), world.mario.getHeight());
+    loadSpritePixels("enemyPixel.txt", assets.enemyPixel, world.enemies[0].getWidth(), world.enemies[0].getHeight());
+    loadSpritePixels("coinToken.txt", assets.coinPixel, world.coins[0].getWidth(), world.coins[0].getHeight());
+    loadPowPixels(assets, world.pow);
+    loadScoreboard(assets);
+
+    InputSystem inputSystem;
+    PhysicsSystem physicsSystem;
+    CollisionSystem collisionSystem;
+    RenderSystem renderSystem;
+    GameRulesSystem gameRulesSystem;
+
+    while (!plotter.getQuit()) {
+        inputSystem.process(plotter, world, state);
+        physicsSystem.update(world, state);
+        collisionSystem.process(world, state);
+        gameRulesSystem.apply(world, state, plotter);
+        renderSystem.renderFrame(plotter, world, state, assets);
+
+        if (plotter.kbhit()) {
+            plotter.getKey();
+        }
+        plotter.update();
+    }
+
+    return 0;
+}
