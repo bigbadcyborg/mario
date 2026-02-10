@@ -1,0 +1,27 @@
+# CMake build output
+cmake-build-*/
+build/
+out/
+
+# Project-specific build directory
+mario/cmake-build-debug/
+
+# Binaries and objects
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.a
+*.lib
+
+# IDE files
+.idea/
+.vscode/
+*.cbp
+*.sln
+*.vcxproj*
+.DS_Store
