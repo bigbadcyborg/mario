@@ -9,6 +9,11 @@ Date Last Modified: 11/30/18
 #include <iostream>
 #include "SDL_Plotter.h"
 #include "functions.h"
+#include "LevelLoader.h"
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
@@ -29,6 +34,13 @@ int main(int argc, char ** argv)
 
     int marioLives = 10; //mario's lives
 
+    LevelLoader levelLoader;
+    LevelData levelData = levelLoader.load("assets/levels/level1.json");
+
+    int level = levelData.progression.startLevel;
+    int numEnemies = levelData.progression.initialEnemyCount;
+    int deadEnemies = 0;
+    int numCoins = levelData.progression.initialCoinCount;
     int level = 1;
     int numEnemies = 4;
     int deadEnemies = 0;
@@ -39,6 +51,28 @@ int main(int argc, char ** argv)
     SDL_Plotter g(WINDOW_HEIGHT,WINDOW_WIDTH); //the window class
 
     char keyStroke; // used to determine what key is hit
+    Sprite mario;
+    vector<EntityRecord> enemyRecords = levelData.recordsByType("enemy");
+    vector<EntityRecord> coinRecords = levelData.recordsByType("coin");
+    vector<EntityRecord> platformRecords = levelData.recordsByType("platform");
+    vector<EntityRecord> tubeRecords = levelData.recordsByType("tube");
+    vector<EntityRecord> powRecords = levelData.recordsByType("pow");
+
+    vector<Sprite> enemies;
+    enemies.reserve(enemyRecords.size());
+    for (int i = 0; i < enemyRecords.size(); i++) {
+        enemies.push_back(Sprite(enemyRecords[i].x, enemyRecords[i].y,
+                                 enemyRecords[i].height, enemyRecords[i].width,
+                                 60, 60, 60));
+    }
+
+    vector<Sprite> coins;
+    coins.reserve(coinRecords.size());
+    for (int i = 0; i < coinRecords.size(); i++) {
+        coins.push_back(Sprite(coinRecords[i].x, coinRecords[i].y,
+                               coinRecords[i].height, coinRecords[i].width,
+                               255, 255, 0));
+    }
     Player mario;
     Enemy enemy(rand() % (WINDOW_WIDTH-40),0,40,40,60,60,60); //SSS
     Enemy enemy1(rand() % (WINDOW_WIDTH-40),199,40,40,60,60,60);
@@ -130,6 +164,8 @@ int main(int argc, char ** argv)
     if(!infile)
         cout << "Error";
     infile.ignore(100, '\n');
+    for (int col = 0; col < 40; col++){
+        for (int row = 0; row < 40; row++){
     for (int col = 0; col < enemy.getWidth(); col++){
         for (int row = 0; row < enemy.getHeight(); row++){
             infile >> enemyPixel[col][row];
@@ -140,6 +176,8 @@ int main(int argc, char ** argv)
     int coinPixel[40][40];
     infile.open("coinToken.txt");
     infile.ignore(100, '\n');
+    for (int col = 0; col < 40; col++){
+        for (int row = 0; row < 40; row++){
     for (int col = 0; col < coin1.getWidth(); col++){
         for (int row = 0; row < coin1.getHeight(); row++){
             infile >> coinPixel[col][row];
@@ -188,6 +226,20 @@ int main(int argc, char ** argv)
 
 
 
+    // Platform Obstacles loaded from level data
+    Obstacle platforms[6];
+    for (int i = 0; i < 6; i++) {
+        platforms[i] = Obstacle(platformRecords[i].height, platformRecords[i].width,
+                                platformRecords[i].x, platformRecords[i].y);
+    }
+
+    Obstacle tubes[4];
+    for (int i = 0; i < 4; i++) {
+        tubes[i] = Obstacle(tubeRecords[i].height, tubeRecords[i].width,
+                            tubeRecords[i].x, tubeRecords[i].y);
+    }
+
+    Block pow(powRecords[0].height, powRecords[0].width, powRecords[0].x, powRecords[0].y);
     // Platform Obstacles
     Platform leftPlat1(25, 350, 0, 425); //left platform
     Platform rightPlat1(25, 350, 650, 425); // right platform
@@ -247,6 +299,9 @@ int main(int argc, char ** argv)
             //draw platforms
             for (int i = 0; i < 6; i++) {
                 platforms[i].drawObstacle(g,255,255,255,0,0,0);
+            }
+            for (int i = 0; i < 4; i++) {
+                tubes[i].drawObstacle(g, 102, 204, 0);
             }
             tubeSide1.drawObstacle(g, 102, 204, 0);
             tubeTop1.drawObstacle(g, 102, 204, 0);
@@ -377,6 +432,7 @@ int main(int argc, char ** argv)
             else
                 enemies[i].setPosY(0);
         }
+        grav(&enemies[0], numEnemies);
         grav(enemyEntities, numEnemies);
 
         //draw coins if theyre not dead
@@ -394,6 +450,7 @@ int main(int argc, char ** argv)
             else
                 coins[i].setPosY(0);
         }
+        grav(&coins[0], numCoins);
         grav(coinEntities, numCoins);
 
 
@@ -412,6 +469,13 @@ int main(int argc, char ** argv)
             }
 
             //teleport enemies to opposite side
+            checkPos(&enemies[0], numEnemies);
+
+            //coin teleport
+            if (coins[0].getPosX() == 0 && coins[0].getPosY() + coins[0].getWidth() > 10) { //S
+                coins[0].setPosX(960);
+            } else if (coins[0].getPosX() + coins[0].getWidth() == 1000) {
+                coins[0].setPosX(0);
             checkPos(enemyEntities, numEnemies);
 
             //coin teleport
@@ -458,6 +522,7 @@ int main(int argc, char ** argv)
 
             //ENEMIES TO PLATFORM COLLISION
             for (int i = 0; i < numEnemies; i++) {
+                if (collided(enemies[i], platforms, 6)) {
                 if (collided(enemies[i], platformEntities, 6)) {
                     enemies[i].setGravity(false);
                     //positionIncrement = 0;
@@ -468,11 +533,16 @@ int main(int argc, char ** argv)
 
 //COIN TO PLATFORM COLLISION
         for(int i = 0; i < numCoins; i++){
+            if (collided(coins[i], platforms, 6)) {
             if (collided(coins[i], platformEntities, 6)) {
                 coins[i].setGravity(false);
                 //cout << "COIN COLLIDED!!!";
             } else {
                 coins[i].setGravity(true);
+                grav(&coins[0], numCoins);
+            }
+    }
+    checkPos(&coins[0], numCoins);
                 grav(coinEntities, numCoins);
             }
     }
@@ -485,6 +555,7 @@ int main(int argc, char ** argv)
 
 
             //recheck mario collision and set gravity accordingly
+            if (collided(mario, platforms, 6)) {
             if (collided(mario, platformEntities, 6)) {
                 mario.setGravity(false);
                 positionIncrement = 0;
@@ -501,6 +572,13 @@ int main(int argc, char ** argv)
             if (deadEnemies == numEnemies) {
                 level++;
                 //bring all enemies back to life
+                reviveAll(&enemies[0], numEnemies);
+                numEnemies += levelData.progression.enemyIncrementPerLevel;
+                if (numEnemies > enemies.size()) {
+                    numEnemies = enemies.size();
+                }
+                coins[0].setDead(true);
+                if (level < levelData.progression.maxLevel) {
                 reviveAll(enemyEntities, numEnemies);
                 numEnemies += 2;
                 coin1.setDead(true);
@@ -515,6 +593,7 @@ int main(int argc, char ** argv)
             numDisplay(g, scoreVis, marioLives, 65, 0);
             numDisplay(g, livesVis, score,  65, 20);
 
+        if(level == levelData.progression.maxLevel)
         if(level == 6)
         {
             cout<<"You won"<<endl;
